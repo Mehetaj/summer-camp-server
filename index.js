@@ -3,6 +3,7 @@ require("dotenv").config();
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
+const jwt = require('jsonwebtoken')
 
 // Middlewares
 app.use(cors());
@@ -28,7 +29,7 @@ const verifyJWT = (req, res, next) => {
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4bdkenh.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -51,8 +52,8 @@ async function run() {
         // jwt api
         app.post('/jwt', (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-            res.send({ token })
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+            res.send({token})
         })
 
 
@@ -65,8 +66,44 @@ async function run() {
 
         app.post("/users", async (req, res) => {
             const user = req.body;
-            const result = await usersCollection.insertOne(user);
+            console.log(user);
+            const query = { email: user.email }
+            console.log(query);
+            const existingUser = await usersCollection.findOne(query);
+            console.log('existing user', existingUser);
+            if (existingUser) {
+                return res.send({ message: 'user already exists' })
+            }
+            const result = await usersCollection.insertOne(user)
             res.send(result)
+        })
+
+        // admin api
+
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+
+            if (req.decoded.email !== email) {
+                return res.status(401).send({ admin: false })
+            }
+            const query = { email: email };
+            const user = await usersCollection.findOne(query)
+            const result = { admin: user?.role === 'admin' }
+            res.send(result)
+        })
+
+        app.patch("/users/admin/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            };
+
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result)
+
         })
 
 
