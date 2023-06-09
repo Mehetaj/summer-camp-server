@@ -48,7 +48,7 @@ async function run() {
         // Send a ping to confirm a successful connection
         const usersCollection = client.db("summer_camp").collection("users");
         const classesCollection = client.db("summer_camp").collection("classes");
-        const allClassesCollection = client.db("summer_camp").collection("allclass");
+        // const allClassesCollection = client.db("summer_camp").collection("allclass");
         const instructorCollection = client.db("summer_camp").collection("instructor");
 
 
@@ -141,16 +141,7 @@ async function run() {
         // add class api
 
       
-        app.get("/allclass", async(req, res) => {
-            const result = await allClassesCollection.find().toArray();
-            res.send(result)
-        })
-
-        app.post("/allclass", async(req, res) => {
-            const item = req.body;
-            const result = await allClassesCollection.insertOne(item);
-            res.send(result)
-        })
+        
 
         app.get('/classes', async (req, res) => {
             const email = req.query.email;
