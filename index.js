@@ -1,6 +1,7 @@
 const express = require('express');
-require("dotenv").config();
 const cors = require('cors');
+require("dotenv").config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 const jwt = require('jsonwebtoken')
@@ -29,7 +30,6 @@ const verifyJWT = (req, res, next) => {
 
 
 
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4bdkenh.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -47,6 +47,10 @@ async function run() {
         await client.connect();
         // Send a ping to confirm a successful connection
         const usersCollection = client.db("summer_camp").collection("users");
+        const classesCollection = client.db("summer_camp").collection("classes");
+        const allClassesCollection = client.db("summer_camp").collection("allclass");
+        const instructorCollection = client.db("summer_camp").collection("instructor");
+
 
 
         // jwt api
@@ -109,14 +113,14 @@ async function run() {
         // instructor api
 
 
-        app.get("/users/instructor/:email", verifyJWT, async(req, res) => {
+        app.get("/users/instructor/:email", verifyJWT, async (req, res) => {
             const email = req.params.email;
 
             if (req.decoded.email !== email) {
                 return res.status(401).send({ instructor: false })
             }
 
-            const query = {email: email};
+            const query = { email: email };
             const user = await usersCollection.findOne(query);
             const result = { instructor: user?.role === 'instructor' }
             res.send(result)
@@ -133,6 +137,58 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc);
             res.send(result)
         })
+
+        // add class api
+
+      
+        app.get("/allclass", async(req, res) => {
+            const result = await allClassesCollection.find().toArray();
+            res.send(result)
+        })
+
+        app.post("/allclass", async(req, res) => {
+            const item = req.body;
+            const result = await allClassesCollection.insertOne(item);
+            res.send(result)
+        })
+
+        app.get('/classes', async (req, res) => {
+            const email = req.query.email;
+            // console.log(email);
+            // if (!email) {
+            //     res.send([])
+            // }
+
+            // const decodedEmail = req.decoded.email;
+            // if (email !== decodedEmail) {
+            //     return res.status(403).send({ error: true, message: 'Forbidden Access' })
+            // }
+
+
+            const query = { email: email };
+            const result = await classesCollection.find().toArray();
+            res.send(result)
+
+        })
+
+        app.post('/classes', async (req, res) => {
+            const item = req.body;
+            const result = await classesCollection.insertOne(item);
+            res.send(result)
+          })
+
+          // all instructors
+          app.get("/allinstructors", async(req, res) => {
+            const result = await instructorCollection.find().toArray();
+            res.send(result);
+          })
+
+          app.post("/allinstructors", async(req, res) => {
+            const user = req.body;
+            const result = await instructorCollection.insertOne(user)
+            res.send(result)
+          })
+
 
 
 
