@@ -140,8 +140,8 @@ async function run() {
 
         // add class api
 
-      
-        
+
+
 
         app.get('/classes', async (req, res) => {
             const email = req.query.email;
@@ -166,17 +166,56 @@ async function run() {
             const item = req.body;
             const result = await classesCollection.insertOne(item);
             res.send(result)
-          })
+        })
 
-          // all instructors
-          app.get("/allinstructors", async(req, res) => {
+        // all instructors
+        app.get("/allinstructors", async (req, res) => {
             const result = await instructorCollection.find().toArray();
             res.send(result);
-          })
+        })
 
-          app.post("/allinstructors", async(req, res) => {
+        app.post("/allinstructors", async (req, res) => {
             const user = req.body;
             const result = await instructorCollection.insertOne(user)
+            res.send(result)
+        })
+
+
+
+        // admin apis
+
+        app.get("/classes/:id", async(req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await classesCollection.findOne(query);
+            res.send(result)
+        })
+
+        app.put('/classes/:id', async (req, res) => {
+            const id = req.params.id;
+            const classes = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const option = { upsert: true };
+            const updateDoc = {
+              $set: {
+                status: 'Approved'
+              }
+            }
+            const result = await classesCollection.updateOne(filter,updateDoc,option);
+            res.send(result)
+          })
+
+
+          app.patch("/classes/:id", async(req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id)};
+            const option = {upsert: true};
+            const updateDoc = {
+                $set: {
+                    status: 'Denied'
+                }
+            }
+            const result = await classesCollection.updateOne(filter, updateDoc,option)
             res.send(result)
           })
 
