@@ -52,7 +52,7 @@ async function run() {
         // const allClassesCollection = client.db("summer_camp").collection("allclass");
         const instructorCollection = client.db("summer_camp").collection("instructor");
         const selectedClassCollection = client.db("summer_camp").collection("selectedClass");
-        const paymentCollection = client.db("summer_camp").collection("payment");
+        const paymentCollection = client.db("summer_camp").collection("payments");
 
 
 
@@ -258,19 +258,30 @@ async function run() {
         app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;
             console.log(price);
-            // const amount = price * 100
+            const amount = price * 100
 
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
 
+        // payment related api
 
+        app.post("/payments", async(req, res) =>{
+            const payment = req.body;
+            console.log(payment);
+            const result = await paymentCollection.insertOne(payment);
 
-            // const paymentIntent = await stripe.paymentIntents.create({
-            //     amount: amount,
-            //     currency: 'usd',
-            //     payment_method_types: ['card']
-            // });
-            // res.send({
-            //     clientSecret: paymentIntent.client_secret
-            // })
+            // const query = {_id: { $in: payment.payment.item.find(id => new ObjectId(id)) }};
+            // const deleteResult = await selectedClassCollection.deleteOne(query)
+            const filter = {_id: {$in : payment.find}}
+
+            res.send({result});
         })
 
 
