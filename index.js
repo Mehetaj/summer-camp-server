@@ -50,6 +50,8 @@ async function run() {
         const classesCollection = client.db("summer_camp").collection("classes");
         // const allClassesCollection = client.db("summer_camp").collection("allclass");
         const instructorCollection = client.db("summer_camp").collection("instructor");
+        const selectedClassCollection = client.db("summer_camp").collection("selectedClass");
+        
 
 
 
@@ -216,6 +218,20 @@ async function run() {
                 }
             }
             const result = await classesCollection.updateOne(filter, updateDoc,option)
+            res.send(result)
+          })
+
+
+          // selectedClass by students
+
+          app.get("/selectedClass", async(req, res) => {
+            const result = await selectedClassCollection.find().toArray();
+            res.send(result)
+          })
+
+          app.post("/selectedClass", async(req, res) => {
+            const classes = req.body;
+            const result = await selectedClassCollection.insertOne(classes);
             res.send(result)
           })
 
