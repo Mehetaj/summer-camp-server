@@ -51,7 +51,7 @@ async function run() {
         // const allClassesCollection = client.db("summer_camp").collection("allclass");
         const instructorCollection = client.db("summer_camp").collection("instructor");
         const selectedClassCollection = client.db("summer_camp").collection("selectedClass");
-        
+
 
 
 
@@ -186,9 +186,9 @@ async function run() {
 
         // admin apis
 
-        app.get("/classes/:id", async(req, res) => {
+        app.get("/classes/:id", async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await classesCollection.findOne(query);
             res.send(result)
         })
@@ -199,41 +199,56 @@ async function run() {
             const filter = { _id: new ObjectId(id) };
             const option = { upsert: true };
             const updateDoc = {
-              $set: {
-                status: 'Approved'
-              }
+                $set: {
+                    status: 'Approved'
+                }
             }
-            const result = await classesCollection.updateOne(filter,updateDoc,option);
+            const result = await classesCollection.updateOne(filter, updateDoc, option);
             res.send(result)
-          })
+        })
 
 
-          app.patch("/classes/:id", async(req, res) => {
+        app.patch("/classes/:id", async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: new ObjectId(id)};
-            const option = {upsert: true};
+            const filter = { _id: new ObjectId(id) };
+            const option = { upsert: true };
             const updateDoc = {
                 $set: {
                     status: 'Denied'
                 }
             }
-            const result = await classesCollection.updateOne(filter, updateDoc,option)
+            const result = await classesCollection.updateOne(filter, updateDoc, option)
             res.send(result)
-          })
+        })
 
 
-          // selectedClass by students
+        // selectedClass by students
 
-          app.get("/selectedClass", async(req, res) => {
+        app.get("/selectedClass", async (req, res) => {
             const result = await selectedClassCollection.find().toArray();
             res.send(result)
-          })
+        })
 
-          app.post("/selectedClass", async(req, res) => {
+        app.get("/selectedClass/:id", async(req, res) =>{
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id)};
+            const result = await selectedClassCollection.findOne(query);
+            res.send(result)
+        })
+
+        app.post("/selectedClass", async (req, res) => {
             const classes = req.body;
             const result = await selectedClassCollection.insertOne(classes);
             res.send(result)
-          })
+        })
+
+        app.delete("/selectedClass/:id", async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { _id: new ObjectId(id) };
+            const result = await selectedClassCollection.deleteOne(query);
+            res.send(result)
+        })
 
 
 
