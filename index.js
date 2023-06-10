@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 const jwt = require('jsonwebtoken')
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY)
 
 // Middlewares
 app.use(cors());
@@ -51,6 +52,7 @@ async function run() {
         // const allClassesCollection = client.db("summer_camp").collection("allclass");
         const instructorCollection = client.db("summer_camp").collection("instructor");
         const selectedClassCollection = client.db("summer_camp").collection("selectedClass");
+        const paymentCollection = client.db("summer_camp").collection("payment");
 
 
 
@@ -229,9 +231,9 @@ async function run() {
             res.send(result)
         })
 
-        app.get("/selectedClass/:id", async(req, res) =>{
+        app.get("/selectedClass/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await selectedClassCollection.findOne(query);
             res.send(result)
         })
@@ -249,6 +251,32 @@ async function run() {
             const result = await selectedClassCollection.deleteOne(query);
             res.send(result)
         })
+
+
+        // payment instent
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const { price } = req.body;
+            console.log(price);
+            // const amount = price * 100
+
+
+
+
+            // const paymentIntent = await stripe.paymentIntents.create({
+            //     amount: amount,
+            //     currency: 'usd',
+            //     payment_method_types: ['card']
+            // });
+            // res.send({
+            //     clientSecret: paymentIntent.client_secret
+            // })
+        })
+
+
+
+
+
 
 
 
