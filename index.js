@@ -74,11 +74,11 @@ async function run() {
 
         app.post("/users", async (req, res) => {
             const user = req.body;
-            console.log(user);
+            // console.log(user);
             const query = { email: user.email }
-            console.log(query);
+            // console.log(query);
             const existingUser = await usersCollection.findOne(query);
-            console.log('existing user', existingUser);
+            // console.log('existing user', existingUser);
             if (existingUser) {
                 return res.send({ message: 'user already exists' })
             }
@@ -148,19 +148,6 @@ async function run() {
 
 
         app.get('/classes', async (req, res) => {
-            const email = req.query.email;
-            // console.log(email);
-            // if (!email) {
-            //     res.send([])
-            // }
-
-            // const decodedEmail = req.decoded.email;
-            // if (email !== decodedEmail) {
-            //     return res.status(403).send({ error: true, message: 'Forbidden Access' })
-            // }
-
-
-            const query = { email: email };
             const result = await classesCollection.find().toArray();
             res.send(result)
 
@@ -221,6 +208,36 @@ async function run() {
             }
             const result = await classesCollection.updateOne(filter, updateDoc, option)
             res.send(result)
+        });
+
+        app.get("/feedback", async (req, res) => {
+            const result = await classesCollection.find().toArray();
+            res.send(result)
+        })
+
+        // app.put("/feedback", async(req, res) => {
+        //     const item = req.body;
+        //     const result = await classesCollection.insertOne(item);
+        //     res.send(result);
+        // })
+
+        app.put("/feedback/:id", async (req, res) => {
+            const item = req.body;
+            console.log(item);
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            
+                if (item) {
+                    const updatedDoc = {
+                        $set: {
+                            feedback: item
+                        }
+                    };
+                    const result = await classesCollection.updateOne(filter, updatedDoc, options)
+                    res.send(result)
+                }
+            
         })
 
 
@@ -246,7 +263,7 @@ async function run() {
 
         app.delete("/selectedClass/:id", async (req, res) => {
             const id = req.params.id;
-            console.log(id);
+            // console.log(id);
             const query = { _id: new ObjectId(id) };
             const result = await selectedClassCollection.deleteOne(query);
             res.send(result)
@@ -257,7 +274,7 @@ async function run() {
 
         app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;
-            console.log(price);
+            // console.log(price);
             const amount = price * 100
 
             const paymentIntent = await stripe.paymentIntents.create({
@@ -272,16 +289,21 @@ async function run() {
 
         // payment related api
 
-        app.post("/payments", async(req, res) =>{
+        app.get("/payments", async (req, res) => {
+            const reuslt = await paymentCollection.find().toArray();
+            res.send(reuslt)
+        })
+
+        app.post("/payments", async (req, res) => {
             const payment = req.body;
-            console.log(payment);
+            // console.log(payment);
             const result = await paymentCollection.insertOne(payment);
 
             // const query = {_id: { $in: payment.payment.item.find(id => new ObjectId(id)) }};
             // const deleteResult = await selectedClassCollection.deleteOne(query)
-            const filter = {_id: {$in : payment.find}}
+            const filter = { _id: { $in: payment.find } }
 
-            res.send({result});
+            res.send({ result });
         })
 
 
